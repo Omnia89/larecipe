@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use BinaryTorch\LaRecipe\Commands\AssetCommand;
 use BinaryTorch\LaRecipe\Commands\ThemeCommand;
 use BinaryTorch\LaRecipe\Commands\InstallCommand;
+use BinaryTorch\LaRecipe\Contracts\MarkdownParser;
+use BinaryTorch\LaRecipe\Services\ParseDownMarkdownParser;
 use BinaryTorch\LaRecipe\Facades\LaRecipe as LaRecipeFacade;
 use BinaryTorch\LaRecipe\Commands\GenerateDocumentationCommand;
 
@@ -48,12 +50,13 @@ class LaRecipeServiceProvider extends ServiceProvider
     public function register()
     {
         $this->registerConfigs();
-        $this->loadHelpers();
 
         if ($this->app->runningInConsole()) {
             $this->registerPublishableResources();
             $this->registerConsoleCommands();
         }
+
+        $this->app->bind(MarkdownParser::class, ParseDownMarkdownParser::class);
 
         $this->app->alias('LaRecipe', LaRecipeFacade::class);
 
@@ -83,16 +86,6 @@ class LaRecipeServiceProvider extends ServiceProvider
 
         foreach ($publishable as $group => $paths) {
             $this->publishes($paths, $group);
-        }
-    }
-
-    /**
-     * Load helpers.
-     */
-    protected function loadHelpers()
-    {
-        foreach (glob(__DIR__.'/Helpers/*.php') as $filename) {
-            require_once $filename;
         }
     }
 
